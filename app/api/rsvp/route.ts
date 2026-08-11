@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
             <div style="background: #f5f5f0; padding: 20px; border-radius: 8px; margin: 24px 0;">
               <p style="margin: 0 0 8px;"><strong>📅 Date:</strong> Thursday, 20 August 2026</p>
               <p style="margin: 0 0 8px;"><strong>📍 Venue:</strong> Vinyls Music Café, Windhoek</p>
-              <p style="margin: 0;"><strong>🕖 Time:</strong> To be confirmed</p>
+              <p style="margin: 0;"><strong>🕖 Time:</strong> 18:30 – 21:30</p>
             </div>
             <p>Further details will be shared closer to the event. Feel free to reach out at <a href="mailto:info@unqodigital.com">info@unqodigital.com</a>.</p>
             <p style="color: #888; font-size: 13px; margin-top: 32px;">Unqo Digital Solutions CC · Windhoek, Namibia</p>

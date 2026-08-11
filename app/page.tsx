@@ -91,6 +91,7 @@ export default function Home() {
           {[
             { icon: "📅", label: "Thursday, 20 August 2026" },
             { icon: "📍", label: "Vinyls Music Café, Windhoek" },
+          { icon: "🕖", label: "18:30 – 21:30" },
           ].map(({ icon, label }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "rgba(255,255,255,0.06)", border: "0.5px solid rgba(255,255,255,0.12)", borderRadius: "100px", fontSize: "14px", color: "rgba(255,255,255,0.8)" }}>
               <span>{icon}</span><span>{label}</span>
