@@ -1,170 +1,290 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
-const ROLES = [
-  "Founder / Co-Founder",
-  "Executive / C-Suite",
-  "Entrepreneur",
-  "Investor",
-  "Business Professional",
-  "Student",
-  "Other",
-];
-
-const HEARD_FROM = [
-  "Instagram",
-  "LinkedIn",
-  "WhatsApp",
-  "Friend / Colleague",
-  "Other",
-];
+const navy = "#1B2A8A";
+const teal = "#00B4AA";
+const red = "#E8344E";
+const yellow = "#F5C400";
 
 export default function Home() {
-  const [form, setForm] = useState({
-    fullName: "", email: "", phone: "", businessName: "",
-    role: "", industry: "", motivation: "", heardFrom: "",
-  });
+  const [seats, setSeats] = useState<{ remaining: number; total: number } | null>(null);
+  const [feedback, setFeedback] = useState({ name: "", email: "", rating: "", interest: "", comments: "", notify: false });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [seats, setSeats] = useState<{ remaining: number; total: number } | null>(null);
 
   useEffect(() => {
     fetch("/api/rsvp").then(r => r.json()).then(d => setSeats(d));
   }, []);
 
-  function update(field: string, value: string) {
-    setForm(f => ({ ...f, [field]: value }));
-  }
+  const isFull = seats !== null && seats.remaining <= 0;
 
-  async function submit() {
+  async function submitFeedback() {
     setError("");
-    const required = ["fullName", "email", "phone", "businessName", "role", "industry", "motivation", "heardFrom"];
-    for (const f of required) {
-      if (!form[f as keyof typeof form]) {
-        setError("Please fill in all fields.");
-        return;
-      }
+    if (!feedback.name || !feedback.email || !feedback.rating) {
+      setError("Please fill in your name, email and rating.");
+      return;
     }
     setSubmitting(true);
-    const res = await fetch("/api/rsvp", {
+    const res = await fetch("/api/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(feedback),
     });
-    const data = await res.json();
-    if (res.ok) {
-      setSubmitted(true);
-      setSeats(s => s ? { ...s, remaining: data.seatsRemaining, total: s.total + 1 } : s);
-    } else {
-      setError(data.error || "Something went wrong.");
-    }
+    if (res.ok) setSubmitted(true);
+    else setError("Something went wrong. Please try again.");
     setSubmitting(false);
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", padding: "14px 16px", fontSize: "15px",
-    border: "0.5px solid rgba(255,255,255,0.15)", borderRadius: "8px",
-    background: "rgba(255,255,255,0.06)", color: "#fff",
-    outline: "none", fontFamily: "inherit", boxSizing: "border-box",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: "12px", letterSpacing: "0.08em", textTransform: "uppercase",
-    color: "rgba(255,255,255,0.4)", display: "block", marginBottom: "8px",
-  };
-
-  const isFull = seats !== null && seats.remaining <= 0;
-
   return (
-    <div style={{ minHeight: "100vh", background: "#080C14", fontFamily: "-apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif", color: "#fff" }}>
-      <div style={{ position: "relative", padding: "80px 24px 60px", textAlign: "center", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(184,255,0,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "24px" }}>Unqo Digital & Moodbod present</div>
-        <div style={{ fontSize: "13px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#B8FF00", marginBottom: "12px" }}>The</div>
-        <h1 style={{ fontSize: "clamp(56px, 12vw, 96px)", fontWeight: "800", lineHeight: 1, margin: "0 0 8px", letterSpacing: "-2px" }}>Founders&apos;</h1>
-        <h1 style={{ fontSize: "clamp(56px, 12vw, 96px)", fontWeight: "800", lineHeight: 1, margin: "0 0 32px", letterSpacing: "-2px", color: "#B8FF00" }}>Table</h1>
-        <p style={{ fontSize: "18px", color: "rgba(255,255,255,0.6)", maxWidth: "480px", margin: "0 auto 48px", lineHeight: 1.6 }}>Challenging conventions. Shaping industries. Inspiring change.</p>
-        <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap", marginBottom: "16px" }}>
-          {[
-            { icon: "📅", label: "Thursday, 20 August 2026" },
-            { icon: "📍", label: "Vinyls Music Café, Windhoek" },
-            { icon: "🕖", label: "18:00 – 21:30" },
-          ].map(({ icon, label }) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "rgba(255,255,255,0.06)", border: "0.5px solid rgba(255,255,255,0.12)", borderRadius: "100px", fontSize: "14px", color: "rgba(255,255,255,0.8)" }}>
-              <span>{icon}</span><span>{label}</span>
+    <div style={{ minHeight: "100vh", background: navy, fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif", color: "#fff" }}>
+
+      {/* NAV */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "20px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(27,42,138,0.9)", backdropFilter: "blur(12px)" }}>
+        <div style={{ fontSize: "14px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase" }}>Founders Table Namibia</div>
+        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)" }}>Edition 1 · 20 August 2026</div>
+      </div>
+
+      {/* HERO — full screen */}
+      <div style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", overflow: "hidden", padding: "100px 32px 60px" }}>
+        {/* Top circles */}
+        <div style={{ position: "absolute", top: -80, left: -80, width: 240, height: 240, borderRadius: "50%", background: red, opacity: 0.85 }} />
+        <div style={{ position: "absolute", top: -80, right: -80, width: 240, height: 240, borderRadius: "50%", background: teal, opacity: 0.85 }} />
+        <div style={{ position: "absolute", top: -80, left: 80, width: 240, height: 240, borderRadius: "50%", background: "#0a0a14" }} />
+        <div style={{ position: "absolute", top: -80, right: 80, width: 240, height: 240, borderRadius: "50%", background: "#0a0a14" }} />
+        {/* Bottom circles */}
+        <div style={{ position: "absolute", bottom: -80, left: -80, width: 240, height: 240, borderRadius: "50%", background: yellow, opacity: 0.85 }} />
+        <div style={{ position: "absolute", bottom: -80, left: 80, width: 240, height: 240, borderRadius: "50%", background: "#0a0a14" }} />
+        <div style={{ position: "absolute", bottom: -80, right: -80, width: 240, height: 240, borderRadius: "50%", background: teal, opacity: 0.85 }} />
+        <div style={{ position: "absolute", bottom: -80, right: 80, width: 240, height: 240, borderRadius: "50%", background: "#0a0a14" }} />
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ display: "inline-block", background: yellow, color: navy, fontWeight: "800", fontSize: "13px", padding: "4px 14px", borderRadius: "4px", marginBottom: "20px", letterSpacing: "0.08em" }}>THE</div>
+          <h1 style={{ fontSize: "clamp(72px, 18vw, 140px)", fontWeight: "900", lineHeight: 0.88, margin: "0 0 -8px", letterSpacing: "-4px", textTransform: "uppercase" }}>FOUNDERS</h1>
+          <h1 style={{ fontSize: "clamp(72px, 18vw, 140px)", fontWeight: "900", lineHeight: 0.88, margin: "0 0 40px", letterSpacing: "-4px", textTransform: "uppercase", color: teal }}>TABLE</h1>
+          <div style={{ fontSize: "clamp(14px, 2.5vw, 20px)", fontWeight: "700", marginBottom: "8px", letterSpacing: "0.02em" }}>Edition 1: THE GRAVEYARD OF GOOD IDEAS</div>
+          <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginBottom: "40px" }}>Presented by Unqo Digital and Moodbod</div>
+          <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginBottom: "32px" }}>
+            {[
+              { label: "Thursday, 20 August 2026" },
+              { label: "Vinyls Music Cafe, Windhoek" },
+              { label: "18:00 to 21:30 · Free Entry" },
+            ].map(({ label }) => (
+              <div key={label} style={{ padding: "8px 18px", background: "rgba(255,255,255,0.1)", borderRadius: "100px", fontSize: "13px", border: "1px solid rgba(255,255,255,0.15)" }}>
+                {label}
+              </div>
+            ))}
+          </div>
+          {isFull && (
+            <div style={{ display: "inline-block", background: red, color: "#fff", fontWeight: "700", fontSize: "13px", padding: "10px 24px", borderRadius: "100px", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              The Table is Full
             </div>
-          ))}
+          )}
         </div>
-        {seats && (
-          <div style={{ fontSize: "13px", color: isFull ? "#ff6b6b" : seats.remaining <= 5 ? "#ff6b6b" : "#B8FF00", marginTop: "16px", fontWeight: "600" }}>
-            {isFull ? "The Table is Full" : `${seats.remaining} of 40 seats remaining`}
-          </div>
-        )}
       </div>
 
-      <div style={{ maxWidth: "580px", margin: "0 auto", padding: "0 24px 80px" }}>
-        {isFull ? (
-          <div style={{ textAlign: "center", padding: "60px 40px", background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.1)", borderRadius: "16px" }}>
-            <div style={{ fontSize: "56px", marginBottom: "24px" }}>🪑</div>
-            <h2 style={{ fontSize: "32px", fontWeight: "800", marginBottom: "16px", letterSpacing: "-1px" }}>The Table is Full.</h2>
-            <p style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.7, marginBottom: "32px", fontSize: "16px" }}>
-              All 40 seats have been claimed. We are grateful for the response and look forward to seeing everyone on the night.
-            </p>
-            <div style={{ padding: "20px", background: "rgba(184,255,0,0.05)", border: "0.5px solid rgba(184,255,0,0.2)", borderRadius: "12px" }}>
-              <p style={{ margin: "0 0 8px", fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>📅 Thursday, 20 August 2026</p>
-              <p style={{ margin: "0 0 8px", fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>📍 Vinyls Music Café, Windhoek</p>
-              <p style={{ margin: "0", fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>🕖 18:00 – 21:30 · Free Entry</p>
-            </div>
-            <p style={{ marginTop: "24px", fontSize: "13px", color: "rgba(255,255,255,0.3)" }}>
-              For enquiries contact us at info@unqodigital.com or +264 81 281 3427
-            </p>
-          </div>
-        ) : submitted ? (
-          <div style={{ textAlign: "center", padding: "60px 40px", background: "rgba(184,255,0,0.05)", border: "0.5px solid rgba(184,255,0,0.2)", borderRadius: "16px" }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>✓</div>
-            <h2 style={{ fontSize: "28px", fontWeight: "700", marginBottom: "12px" }}>You&apos;re on the list.</h2>
-            <p style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>Check your email for confirmation. We look forward to seeing you at Vinyls Music Café on 20 August.</p>
-          </div>
-        ) : (
-          <div style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "0.5px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "40px 32px" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: "700", marginBottom: "8px" }}>Reserve your seat</h2>
-            <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.4)", marginBottom: "32px" }}>Limited to 40 attendees. Founders, executives, and change-makers only.</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div><label style={labelStyle}>Full Name</label><input value={form.fullName} onChange={e => update("fullName", e.target.value)} placeholder="Denzel Karupa" style={inputStyle} /></div>
-              <div><label style={labelStyle}>Email Address</label><input type="email" value={form.email} onChange={e => update("email", e.target.value)} placeholder="you@company.com" style={inputStyle} /></div>
-              <div><label style={labelStyle}>Phone Number</label><input type="tel" value={form.phone} onChange={e => update("phone", e.target.value)} placeholder="+264 81 000 0000" style={inputStyle} /></div>
-              <div><label style={labelStyle}>Business Name / Organisation</label><input value={form.businessName} onChange={e => update("businessName", e.target.value)} placeholder="Unqo Digital Solutions CC" style={inputStyle} /></div>
-              <div>
-                <label style={labelStyle}>Your Role</label>
-                <select value={form.role} onChange={e => update("role", e.target.value)} style={{ ...inputStyle, cursor: "pointer", colorScheme: "dark" }}>
-                  <option value="">Select your role</option>
-                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              <div><label style={labelStyle}>Industry</label><input value={form.industry} onChange={e => update("industry", e.target.value)} placeholder="e.g. Technology, Real Estate, Finance" style={inputStyle} /></div>
-              <div>
-                <label style={labelStyle}>What brings you to the Founders&apos; Table?</label>
-                <textarea value={form.motivation} onChange={e => update("motivation", e.target.value)} placeholder="Tell us in 1-2 sentences..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
-              </div>
-              <div>
-                <label style={labelStyle}>How did you hear about us?</label>
-                <select value={form.heardFrom} onChange={e => update("heardFrom", e.target.value)} style={{ ...inputStyle, cursor: "pointer", colorScheme: "dark" }}>
-                  <option value="">Select an option</option>
-                  {HEARD_FROM.map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
-              </div>
-              {error && <div style={{ fontSize: "13px", color: "#ff6b6b", padding: "12px 16px", background: "rgba(255,107,107,0.08)", borderRadius: "8px", border: "0.5px solid rgba(255,107,107,0.2)" }}>{error}</div>}
-              <button onClick={submit} disabled={submitting} style={{ width: "100%", padding: "16px", fontSize: "14px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", background: submitting ? "rgba(184,255,0,0.5)" : "#B8FF00", color: "#0a0a0a", border: "none", borderRadius: "8px", cursor: submitting ? "not-allowed" : "pointer" }}>
-                {submitting ? "Submitting..." : "Reserve My Seat →"}
-              </button>
-            </div>
-          </div>
-        )}
+      {/* ABOUT */}
+      <div style={{ background: "#f0f0f5", color: navy, padding: "80px 32px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", color: teal, marginBottom: "16px" }}>The Evening</div>
+          <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: "800", marginBottom: "24px", lineHeight: 1.15 }}>Not a pitch night. Not a networking event dressed up as a panel.</h2>
+          <p style={{ fontSize: "17px", lineHeight: 1.85, color: "#444", marginBottom: "16px" }}>
+            The Founders Table is a structured, honest conversation about why good ideas die in Namibia and what the root causes of that failure actually are. The goal is simple: leave every person in that room with a clearer picture of why things are the way they are and what it would actually take to change them.
+          </p>
+          <p style={{ fontSize: "17px", lineHeight: 1.85, color: "#444" }}>
+            The tone is curiosity, not judgment. We are not here to expose anyone. We are here to understand, because you cannot fix what you have not honestly looked at.
+          </p>
+        </div>
       </div>
 
-      <div style={{ textAlign: "center", padding: "24px", borderTop: "0.5px solid rgba(255,255,255,0.06)", fontSize: "12px", color: "rgba(255,255,255,0.25)" }}>
-        Founders&apos; Table Namibia · Presented by Unqo Digital & Moodbod · unqodigital.com
+      {/* CO-CREATORS */}
+      <div style={{ background: navy, padding: "80px 32px" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "56px" }}>
+            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", color: teal, marginBottom: "12px" }}>Behind the Table</div>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 40px)", fontWeight: "800" }}>The Co-Creators</h2>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
+            {[
+              {
+                name: "Denzel Karupa",
+                title: "Founder and CEO",
+                company: "Unqo Digital Solutions",
+                photo: "/denzel.jpg",
+                position: "center 20%",
+                bio: "Denzel is a self-taught developer and founder based in Windhoek who builds things he wishes already existed. Unqo Properties, connecting Namibians with verified agents and a home to call their own. Imali, a budgeting app that removes the friction between you and your money. And Ondjila AI, teaching the world's next workforce AI skills built with African context. He co-created the Founders Table to bring founders together around the topics people are usually afraid to say out loud. He builds first and figures out the rest on the way there.",
+                links: [
+                  { label: "Unqo Digital", url: "https://unqodigital.com" },
+                  { label: "Unqo Properties", url: "https://unqoproperties.com" },
+                ],
+                color: teal,
+                reverse: false,
+              },
+              {
+                name: "Simeon Tuyoleni",
+                title: "Founder",
+                company: "Asmbly and Moodbod",
+                photo: "/simeon.jpg",
+                position: "center 15%",
+                bio: "Simeon is the founder of Asmbly, an education technology startup bringing teachers, learners and the education system together to improve the quality of education in Namibia and beyond, and Moodbod, a technology company that turns ideas into digital products. His work is centred around building practical solutions to problems and bringing people together around what can be built when ideas, technology and community meet. Through Founders Table Namibia, he wants to bring founders into one conversation where they can learn from each other and progressively build a more sustainable future together.",
+                links: [
+                  { label: "Asmbly", url: "https://asmbly.space" },
+                  { label: "Moodbod", url: "https://www.moodbod.agency" },
+                ],
+                color: yellow,
+                reverse: true,
+              },
+            ].map((person) => (
+              <div key={person.name} style={{ display: "flex", flexDirection: person.reverse ? "row-reverse" : "row", gap: "48px", alignItems: "center", flexWrap: "wrap" }}>
+                {/* Floating glass image frame */}
+                <div style={{ flexShrink: 0, width: 280, height: 360, position: "relative" }}>
+                  <div style={{
+                    position: "absolute", inset: 0, borderRadius: "24px",
+                    background: "rgba(255,255,255,0.08)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    boxShadow: `0 8px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.05)`,
+                    overflow: "hidden",
+                    padding: "10px",
+                  }}>
+                    <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: "16px", overflow: "hidden" }}>
+                      <Image src={person.photo} alt={person.name} fill style={{ objectFit: "cover", objectPosition: person.position }} />
+                    </div>
+                    {/* Glass edge highlight */}
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "24px 24px 0 0", background: "linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)", pointerEvents: "none" }} />
+                  </div>
+                  {/* Floating glow */}
+                  <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", width: 200, height: 40, background: person.color, filter: "blur(30px)", opacity: 0.3, borderRadius: "50%" }} />
+                </div>
+
+                {/* Text */}
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.18em", textTransform: "uppercase", color: person.color, marginBottom: "10px" }}>{person.title} · {person.company}</div>
+                  <h3 style={{ fontSize: "clamp(28px, 4vw, 38px)", fontWeight: "900", marginBottom: "20px", lineHeight: 1.05, letterSpacing: "-0.5px" }}>{person.name}</h3>
+                  <p style={{ fontSize: "15px", lineHeight: 1.9, color: "rgba(255,255,255,0.6)", marginBottom: "28px" }}>{person.bio}</p>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    {person.links.map(link => (
+                      <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: "12px", fontWeight: "700", padding: "8px 18px", borderRadius: "100px", border: `1.5px solid ${person.color}`, color: person.color, textDecoration: "none", letterSpacing: "0.06em", background: "rgba(255,255,255,0.04)" }}>
+                        {link.label} &rarr;
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FEEDBACK */}
+      <div style={{ background: "#f0f0f5", color: navy, padding: "80px 32px" }}>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", color: teal, marginBottom: "12px" }}>Your Voice Matters</div>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 40px)", fontWeight: "800", marginBottom: "16px" }}>Leave Your Mark</h2>
+            <p style={{ fontSize: "16px", color: "#555", lineHeight: 1.7 }}>Honest feedback, ideas for collaboration, sponsorship interest, or just want to be part of what comes next. This is the space.</p>
+          </div>
+
+          {submitted ? (
+            <div style={{ textAlign: "center", padding: "60px 40px", background: "#fff", borderRadius: "16px", border: `2px solid ${teal}` }}>
+              <h3 style={{ fontSize: "24px", fontWeight: "800", color: navy, marginBottom: "12px" }}>Thank you.</h3>
+              <p style={{ color: "#555" }}>We have received your feedback and will be in touch.</p>
+            </div>
+          ) : (
+            <div style={{ background: "#fff", borderRadius: "16px", padding: "40px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", display: "block", marginBottom: "8px" }}>Full Name *</label>
+                  <input value={feedback.name} onChange={e => setFeedback(f => ({ ...f, name: e.target.value }))} placeholder="Your name"
+                    style={{ width: "100%", padding: "12px 16px", fontSize: "15px", border: "1.5px solid #e0e0e0", borderRadius: "8px", outline: "none", fontFamily: "inherit", boxSizing: "border-box", color: navy }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", display: "block", marginBottom: "8px" }}>Email Address *</label>
+                  <input type="email" value={feedback.email} onChange={e => setFeedback(f => ({ ...f, email: e.target.value }))} placeholder="you@email.com"
+                    style={{ width: "100%", padding: "12px 16px", fontSize: "15px", border: "1.5px solid #e0e0e0", borderRadius: "8px", outline: "none", fontFamily: "inherit", boxSizing: "border-box", color: navy }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", display: "block", marginBottom: "8px" }}>How was the evening? *</label>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {["Excellent", "Great", "Good", "Could be better"].map(r => (
+                      <button key={r} onClick={() => setFeedback(f => ({ ...f, rating: r }))}
+                        style={{ padding: "8px 16px", borderRadius: "100px", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "inherit", border: `2px solid ${feedback.rating === r ? teal : "#e0e0e0"}`, background: feedback.rating === r ? teal : "#fff", color: feedback.rating === r ? "#fff" : "#555" }}>
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", display: "block", marginBottom: "8px" }}>I am interested in</label>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {["Collaborating", "Sponsoring", "Joining the team", "Just staying in touch"].map(r => (
+                      <button key={r} onClick={() => setFeedback(f => ({ ...f, interest: f.interest === r ? "" : r }))}
+                        style={{ padding: "8px 16px", borderRadius: "100px", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "inherit", border: `2px solid ${feedback.interest === r ? navy : "#e0e0e0"}`, background: feedback.interest === r ? navy : "#fff", color: feedback.interest === r ? "#fff" : "#555" }}>
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", display: "block", marginBottom: "8px" }}>Anything else you want to say</label>
+                  <textarea value={feedback.comments} onChange={e => setFeedback(f => ({ ...f, comments: e.target.value }))} rows={4} placeholder="Feedback, ideas, questions, anything."
+                    style={{ width: "100%", padding: "12px 16px", fontSize: "15px", border: "1.5px solid #e0e0e0", borderRadius: "8px", outline: "none", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", color: navy }} />
+                </div>
+                <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+                  <input type="checkbox" checked={feedback.notify} onChange={e => setFeedback(f => ({ ...f, notify: e.target.checked }))} style={{ accentColor: teal, width: 18, height: 18 }} />
+                  <span style={{ fontSize: "14px", color: "#555" }}>Notify me about Edition 2</span>
+                </label>
+                {error && <div style={{ fontSize: "13px", color: red, padding: "12px 16px", background: "rgba(232,52,78,0.06)", borderRadius: "8px", border: `1px solid ${red}` }}>{error}</div>}
+                <button onClick={submitFeedback} disabled={submitting}
+                  style={{ width: "100%", padding: "16px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", background: navy, color: "#fff", border: "none", borderRadius: "8px", cursor: submitting ? "not-allowed" : "pointer" }}>
+                  {submitting ? "Sending..." : "Submit"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div style={{ background: "#0a0e1f", padding: "60px 32px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div style={{ fontSize: "16px", fontWeight: "800", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Founders Table Namibia</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)" }}>Presented by Unqo Digital and Moodbod</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "40px", marginBottom: "48px" }}>
+            {[
+              {
+                name: "Denzel Karupa",
+                role: "Founder, Unqo Digital",
+                email: "info@unqodigital.com",
+                phone: "+264 81 281 3427",
+                color: "#00B4AA",
+              },
+              {
+                name: "Simeon Tuyoleni",
+                role: "Founder, Moodbod",
+                email: "simeon@moodbod.agency",
+                phone: "",
+                color: "#F5C400",
+              },
+            ].map(person => (
+              <div key={person.name} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "24px" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.15em", textTransform: "uppercase", color: person.color, marginBottom: "6px" }}>{person.role}</div>
+                <div style={{ fontSize: "17px", fontWeight: "800", marginBottom: "16px" }}>{person.name}</div>
+                <a href={`mailto:${person.email}`} style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.5)", textDecoration: "none", marginBottom: "8px" }}>{person.email}</a>
+                {person.phone && <a href={`tel:${person.phone.replace(/\s/g, "")}`} style={{ display: "block", fontSize: "13px", color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>{person.phone}</a>}
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", fontSize: "12px", color: "rgba(255,255,255,0.2)", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "24px" }}>
+            Founders Table Namibia · Edition 1 · 20 August 2026 · Windhoek, Namibia
+          </div>
+        </div>
       </div>
     </div>
   );
